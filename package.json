@@ -48,8 +48,24 @@
     "> 0.3% in FI",
     "last 2 versions"
   ],
+  "babel": {
+    "presets": [
+      [ "env", { "targets": {"browsers": [ "IE 11", "> 0.3% in FI", "last 2 versions" ]}, "loose": true, "modules": false }],
+      "react",
+      "stage-2"
+    ],
+    "plugins": [
+      "./build/babelRelayPlugin.js",
+      [ "transform-runtime", {
+        "helpers": true,
+        "polyfill": false,
+        "regenerator": true
+      }]
+    ]
+  },
   "dependencies": {
     "@mapbox/sphericalmercator": "1.0.5",
+    "babel-cli": "^6.24.1",
     "babel-core": "6.23.1",
     "babel-plugin-transform-system-import-commonjs": "1.0.3",
     "babel-preset-env": "1.1.11",
