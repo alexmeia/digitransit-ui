@@ -1,4 +1,6 @@
-import Relay from 'react-relay/classic';
+import { Store } from 'react-relay/classic';
+// Todo rename/move out queries when converting to modern
+import { fetchQuery, graphql } from 'react-relay/compat';
 
 import get from 'lodash/get';
 import take from 'lodash/take';
@@ -12,20 +14,6 @@ import routeCompare from './route-compare';
 import { getLatLng } from './geo-utils';
 import { uniqByLabel } from './suggestionUtils';
 import mapPeliasModality from './pelias-to-modality-mapper';
-
-function getRelayQuery(query) {
-  return new Promise((resolve, reject) => {
-    const callback = (readyState) => {
-      if (readyState.error) {
-        reject(readyState.error);
-      } else if (readyState.done) {
-        resolve(Relay.Store.readQuery(query));
-      }
-    };
-
-    Relay.Store.primeCache({ query }, callback);
-  });
-}
 
 const mapRoute = item => ({
   type: 'Route',
@@ -149,8 +137,8 @@ export function getGeocodingResult(text, searchParams, lang, focusPoint, sources
 }
 
 function getFavouriteRoutes(favourites, input) {
-  const query = Relay.createQuery(Relay.QL`
-    query favouriteRoutes($ids: [String!]!) {
+  const query = graphql`
+    query searchUtilsQuery($ids: [String!]!) {
       routes(ids: $ids ) {
         gtfsId
         agency { name }
@@ -159,11 +147,10 @@ function getFavouriteRoutes(favourites, input) {
         longName
         patterns { code }
       }
-    }`, { ids: favourites },
-  );
+    }`;
 
-  return getRelayQuery(query)
-    .then(favouriteRoutes => favouriteRoutes.map(mapRoute))
+  return fetchQuery(Store, query, { ids: favourites })
+    .then(({ routes }) => routes.map(mapRoute))
     .then(routes => routes.map(favourite => ({
       ...favourite,
       properties: { ...favourite.properties, layer: 'favouriteRoute' },
@@ -176,8 +163,8 @@ function getFavouriteRoutes(favourites, input) {
 }
 
 function getFavouriteStops(favourites, input, origin) {
-  const query = Relay.createQuery(Relay.QL`
-    query favouriteStops($ids: [String!]!) {
+  const query = graphql`
+    query searchUtilsQuery($ids: [String!]!) {
       stops(ids: $ids ) {
         gtfsId
         lat
@@ -187,13 +174,12 @@ function getFavouriteStops(favourites, input, origin) {
         code
         routes { mode }
       }
-    }`, { ids: favourites },
-  );
+    }`;
 
   const refLatLng = origin.lat && origin.lon && getLatLng(origin.lat, origin.lon);
 
-  return getRelayQuery(query)
-    .then(favouriteStops => mapStops(favouriteStops).map(favourite => ({
+  return fetchQuery(Store, query, { ids: favourites })
+    .then(({ stops }) => mapStops(stops).map(favourite => ({
       ...favourite,
       properties: { ...favourite.properties, layer: 'favouriteStop' },
       type: 'FavouriteStop',
@@ -217,8 +203,8 @@ function getRoutes(input, config) {
     return Promise.resolve([]);
   }
 
-  const query = Relay.createQuery(Relay.QL`
-    query routes($name: String) {
+  const query = graphql`
+    query searchUtilsQuery($name: String) {
       viewer {
         routes(name: $name ) {
           gtfsId
@@ -229,11 +215,10 @@ function getRoutes(input, config) {
           patterns { code }
         }
       }
-    }`, { name: input },
-  );
+    }`;
 
-  return getRelayQuery(query).then(data =>
-    data[0].routes.filter(item => (
+  return fetchQuery(Store, query, { name: input }).then(({ viewer }) =>
+    viewer.routes.filter(item => (
       config.feedIds === undefined || config.feedIds.indexOf(item.gtfsId.split(':')[0]) > -1
       ))
     .map(mapRoute)
