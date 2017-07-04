@@ -318,7 +318,7 @@ class SummaryPage extends React.Component {
 export default Relay.createContainer(SummaryPage, {
   fragments: {
     plan: () => Relay.QL`
-      fragment on QueryType {
+      fragment on Query {
         plan(
           fromPlace: $fromPlace,
           toPlace: $toPlace,

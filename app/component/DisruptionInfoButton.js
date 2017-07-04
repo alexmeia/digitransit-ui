@@ -36,7 +36,7 @@ class DisruptionInfoButton extends React.Component {
 export default Relay.createContainer(DisruptionInfoButton, {
   fragments: {
     root: () => Relay.QL`
-      fragment on QueryType {
+      fragment on Query {
         alerts(feeds:$feedIds) {
           id
         }

@@ -1,5 +1,5 @@
 schema {
-  query: QueryType
+  query: Query
 }
 
 # Agency in the graph
@@ -498,7 +498,7 @@ type Plan {
   debugOutput: debugOutput!
 }
 
-type QueryType {
+type Query {
   # Fetches an object given its ID
   node(
     # The ID of an object
@@ -618,7 +618,7 @@ type QueryType {
   carPark(id: String!): CarPark
 
   # Needed until https://github.com/facebook/relay/issues/112 is resolved
-  viewer: QueryType
+  viewer: Query
 
   # Gets plan of a route
   plan(

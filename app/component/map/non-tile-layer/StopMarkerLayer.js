@@ -106,7 +106,7 @@ class StopMarkerLayer extends React.Component {
 export default Relay.createContainer(StopMarkerLayer, {
   fragments: {
     stopsInRectangle: () => Relay.QL`
-      fragment on QueryType {
+      fragment on Query {
         stopsByBbox(
           minLat: $minLat, minLon: $minLon, maxLat: $maxLat, maxLon: $maxLon, agency: $agency
         ) {

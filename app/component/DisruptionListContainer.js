@@ -54,7 +54,7 @@ DisruptionListContainer.propTypes = {
 
 const relayFragment = {
   root: () => Relay.QL`
-    fragment on QueryType {
+    fragment on Query {
       alerts(feeds:$feedIds) {
         id
         feed
