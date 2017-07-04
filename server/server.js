@@ -9,7 +9,7 @@ require('babel-core/register')({
   presets: [['env', { targets: { node: 'current' } }], 'stage-2', 'react'],
   plugins: [
     'transform-system-import-commonjs',
-    path.join(process.cwd(), 'build/babelRelayPlugin'),
+    ['relay', { compat: true, schema: './build/schema.graphql' }],
   ],
   ignore: [
     /node_modules/,

@@ -1,4 +1,4 @@
-import Relay from 'react-relay';
+import Relay from 'react-relay/classic';
 import { VectorTile } from 'vector-tile';
 import compact from 'lodash/compact';
 import isEmpty from 'lodash/isEmpty';

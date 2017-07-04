@@ -4,7 +4,12 @@ const fs = require('fs');
 const introspectionQuery = require('graphql/utilities/introspectionQuery').introspectionQuery;
 const fetch = require('node-fetch');
 
-const outputFilename = 'schema.json';
+const {
+  buildClientSchema,
+  printSchema,
+} = require('graphql');
+
+const outputFilename = 'schema.graphql';
 
 fetch(`${process.env.SERVER_ROOT || 'https://dev-api.digitransit.fi/routing/v1'}/routers/hsl/index/graphql`, {
   method: 'post',
@@ -19,7 +24,7 @@ fetch(`${process.env.SERVER_ROOT || 'https://dev-api.digitransit.fi/routing/v1'}
   console.log(response.headers);
   return response.json();
 }).then((json) => {
-  fs.writeFile(outputFilename, JSON.stringify(json.data, null, 4), (err) => {
+  fs.writeFile(outputFilename, printSchema(buildClientSchema(json.data)), (err) => {
     if (err) {
       console.log(err);
     } else {

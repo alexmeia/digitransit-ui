@@ -1,6 +1,6 @@
 import { VectorTile } from 'vector-tile';
 import Protobuf from 'pbf';
-import Relay from 'react-relay';
+import Relay from 'react-relay/classic';
 import glfun from 'mapbox-gl-function';
 import pick from 'lodash/pick';
 

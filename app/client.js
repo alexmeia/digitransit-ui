@@ -1,10 +1,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import ReactDOM from 'react-dom';
-import Relay from 'react-relay';
-import { Router, match } from 'react-router';
-import IsomorphicRelay from 'isomorphic-relay';
-import IsomorphicRouter from 'isomorphic-relay-router';
+import Relay from 'react-relay/classic';
+import { applyRouterMiddleware, Router, match } from 'react-router';
+import useRelay from 'react-router-relay';
 import provideContext from 'fluxible-addons-react/provideContext';
 import tapEventPlugin from 'react-tap-event-plugin';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
@@ -112,11 +111,6 @@ const callback = () => app.rehydrate(window.state, (err, context) => {
     },
   ]));
 
-  IsomorphicRelay.injectPreparedData(
-    Relay.Store,
-    JSON.parse(document.getElementById('relayData').textContent),
-  );
-
   context
     .getComponentContext()
     .getStore('MessageStore')
@@ -164,24 +158,27 @@ const callback = () => app.rehydrate(window.state, (err, context) => {
   // init geolocation handling
   context.executeAction(initGeolocation).then(() => {
     match({ routes: app.getComponent(), history }, (error, redirectLocation, renderProps) => {
-      IsomorphicRouter.prepareInitialRender(Relay.Store, renderProps).then((props) => {
-        ReactDOM.render(
-          <ContextProvider translations={translations} context={context.getComponentContext()}>
-            <MuiThemeProvider
-              muiTheme={getMuiTheme(MUITheme(config), { userAgent: navigator.userAgent })}
-            >
-              <Router {...props} onUpdate={track} />
-            </MuiThemeProvider>
-          </ContextProvider>,
-          document.getElementById('app'),
-          () => {
-            // Run only in production mode and when built in a docker container
-            if (process.env.NODE_ENV === 'production' && BUILD_TIME !== 'unset') {
-              OfflinePlugin.install();
-            }
-          },
-        );
-      });
+      ReactDOM.render(
+        <ContextProvider translations={translations} context={context.getComponentContext()}>
+          <MuiThemeProvider
+            muiTheme={getMuiTheme(MUITheme(config), { userAgent: navigator.userAgent })}
+          >
+            <Router
+              {...renderProps}
+              render={applyRouterMiddleware(useRelay)}
+              environment={Relay.Store}
+              onUpdate={track}
+            />
+          </MuiThemeProvider>
+        </ContextProvider>,
+        document.getElementById('app'),
+        () => {
+          // Run only in production mode and when built in a docker container
+          if (process.env.NODE_ENV === 'production' && BUILD_TIME !== 'unset') {
+            OfflinePlugin.install();
+          }
+        },
+      );
     });
   });
 

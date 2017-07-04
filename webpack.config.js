@@ -20,7 +20,7 @@ require('babel-core/register')({
   presets: [['env', { targets: { node: 'current' } }], 'stage-2', 'react'],
   plugins: [
     'transform-system-import-commonjs',
-    path.join(process.cwd(), 'build/babelRelayPlugin'),
+    ['relay', { compat: true, schema: './build/schema.graphql' }],
   ],
   ignore: [
     /node_modules/,
@@ -49,7 +49,7 @@ function getRulesConfig(env) {
           ],
           plugins: [
             'transform-system-import-commonjs',
-            path.join(__dirname, 'build/babelRelayPlugin'),
+            ['relay', { compat: true, schema: './build/schema.graphql' }],
             ['transform-runtime', {
               helpers: true,
               polyfill: false,
@@ -79,7 +79,7 @@ function getRulesConfig(env) {
         ],
         plugins: [
           'transform-react-remove-prop-types',
-          path.join(__dirname, 'build/babelRelayPlugin'),
+          ['relay', { compat: true, schema: './build/schema.graphql' }],
           ['transform-runtime', {
             helpers: true,
             polyfill: false,

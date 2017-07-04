@@ -1,3 +1,5 @@
+const fs = require("fs")
+
 module.exports = {
   'parser': 'babel-eslint',
   'parserOptions': {
@@ -23,7 +25,7 @@ module.exports = {
     // Enable GraphQL linting
     'graphql/template-strings': ['error', {
       'env': 'relay',
-      'schemaJson': require('./build/schema.json'),
+      'schemaString': fs.readFileSync('./build/schema.graphql').toString(),
     }],
   },
   'env': {

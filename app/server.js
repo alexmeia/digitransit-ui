@@ -5,17 +5,10 @@ import ReactDOM from 'react-dom/server';
 
 // Routing and state handling
 import match from 'react-router/lib/match';
+import RouterContext from 'react-router/lib/RouteContext';
 import Helmet from 'react-helmet';
 import createHistory from 'react-router/lib/createMemoryHistory';
-import Relay from 'react-relay';
-import IsomorphicRouter from 'isomorphic-relay-router';
-import {
-  RelayNetworkLayer,
-  urlMiddleware,
-  gqErrorsMiddleware,
-  retryMiddleware,
-  batchMiddleware,
-} from 'react-relay-network-layer/lib';
+import Relay from 'react-relay/classic';
 import provideContext from 'fluxible-addons-react/provideContext';
 
 // Libraries
@@ -40,8 +33,6 @@ import { getConfiguration } from './config';
 const appRoot = `${process.cwd()}/`;
 
 // cached assets
-const networkLayers = {};
-const robotLayers = {};
 const cssDefs = {};
 const sprites = {};
 
@@ -55,41 +46,6 @@ function getStringOrArrayElement(arrayOrString, index) {
     return arrayOrString;
   }
   throw new Error(`Not array or string: ${arrayOrString}`);
-}
-
-function getRobotNetworkLayer(config) {
-  if (!robotLayers[config.CONFIG]) {
-    robotLayers[config.CONFIG] = new RelayNetworkLayer([
-      retryMiddleware({ fetchTimeout: 10000, retryDelays: [] }),
-      urlMiddleware({
-        url: `${config.URL.OTP}index/graphql`,
-      }),
-      batchMiddleware({
-        batchUrl: `${config.URL.OTP}index/graphql/batch`,
-      }),
-      gqErrorsMiddleware(),
-    ]);
-  }
-  return robotLayers[config.CONFIG];
-}
-
-const RELAY_FETCH_TIMEOUT = process.env.RELAY_FETCH_TIMEOUT || 1000;
-
-function getNetworkLayer(config) {
-  if (!networkLayers[config.CONFIG]) {
-    networkLayers[config.CONFIG] = new RelayNetworkLayer([
-      retryMiddleware({ fetchTimeout: RELAY_FETCH_TIMEOUT, retryDelays: [] }),
-      urlMiddleware({
-        url: `${config.URL.OTP}index/graphql`,
-      }),
-      batchMiddleware({
-        batchUrl: `${config.URL.OTP}index/graphql/batch`,
-      }),
-      gqErrorsMiddleware(),
-    ],
-    );
-  }
-  return networkLayers[config.CONFIG];
 }
 
 let stats;
@@ -202,7 +158,7 @@ function getScripts(req, config) {
     return <script async src={'/proxy/js/bundle.js'} />;
   }
   return [
-    <script key="manifest "dangerouslySetInnerHTML={{ __html: manifest }} />,
+    <script key="manifest" dangerouslySetInnerHTML={{ __html: manifest }} />,
     <script
       key="common_js"
       src={`${config.APP_PATH}/${getStringOrArrayElement(stats.assetsByChunkName.common, 0)}`}
@@ -224,6 +180,7 @@ const ContextProvider = provideContext(IntlProvider, {
   headers: PropTypes.object,
 });
 
+// eslint-disable-next-line no-unused-vars
 function getContent(context, renderProps, locale, userAgent) {
   // TODO: This should be moved to a place to coexist with similar content from client.js
   return ReactDOM.renderToString(
@@ -235,16 +192,16 @@ function getContent(context, renderProps, locale, userAgent) {
       <MuiThemeProvider
         muiTheme={getMuiTheme(MUITheme(context.getComponentContext().config), { userAgent })}
       >
-        {IsomorphicRouter.render(renderProps)}
+        <RouterContext {...renderProps} />
       </MuiThemeProvider>
     </ContextProvider>,
   );
 }
 
-function getHtml(application, context, locale, [polyfills, relayData], req) {
+function getHtml(application, context, locale, [polyfills], props, req) {
   const config = context.getComponentContext().config;
   // eslint-disable-next-line no-unused-vars
-  const content = relayData != null ? getContent(context, relayData.props, locale, req.headers['user-agent']) : undefined;
+  // const content = getContent(context, props, locale, req.headers['user-agent']);
   const head = Helmet.rewind();
   return ReactDOM.renderToStaticMarkup(
     <ApplicationHtml
@@ -259,16 +216,10 @@ function getHtml(application, context, locale, [polyfills, relayData], req) {
       locale={locale}
       scripts={getScripts(req, config)}
       fonts={config.URL.FONT}
-      relayData={relayData != null ? relayData.data : []}
       head={head}
     />,
   );
 }
-
-const isRobotRequest = agent =>
-  agent &&
-  (agent.indexOf('facebook') !== -1 ||
-   agent.indexOf('Twitterbot') !== -1);
 
 export default function (req, res, next) {
   const config = getConfiguration(req);
@@ -316,20 +267,14 @@ export default function (req, res, next) {
       ) {
         res.status(404);
       }
-      let networkLayer;
-      if (isRobotRequest(agent)) {
-        networkLayer = getRobotNetworkLayer(config);
-      } else {
-        networkLayer = getNetworkLayer(config);
-      }
       const promises = [
         getPolyfills(agent, config),
-        // Isomorphic rendering is ok to fail due timeout
-        IsomorphicRouter.prepareData(renderProps, networkLayer).catch(() => null),
       ];
 
       Promise.all(promises).then(results =>
-        res.send(`<!doctype html>${getHtml(application, context, locale, results, req)}`),
+        res.send(`<!doctype html>${
+          getHtml(application, context, locale, results, renderProps, req)
+        }`),
       ).catch((err) => {
         if (err) { next(err); }
       });
