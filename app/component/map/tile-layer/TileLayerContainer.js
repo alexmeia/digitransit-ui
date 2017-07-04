@@ -1,6 +1,7 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import Relay from 'react-relay/classic';
+import { QueryRenderer, graphql } from 'react-relay/compat';
 import Popup from 'react-leaflet/lib/Popup';
 import { intlShape } from 'react-intl';
 import MapLayer from 'react-leaflet/lib/MapLayer';
@@ -12,7 +13,6 @@ import L from 'leaflet';
 
 import StopRoute from '../../../route/StopRoute';
 import TerminalRoute from '../../../route/TerminalRoute';
-import CityBikeRoute from '../../../route/CityBikeRoute';
 import StopMarkerPopup from '../popups/StopMarkerPopup';
 import MarkerSelectPopup from './MarkerSelectPopup';
 import CityBikePopup from '../popups/CityBikePopup';
@@ -235,14 +235,22 @@ class TileLayerContainer extends MapLayer {
         } else if (this.state.selectableTargets[0].layer === 'citybike') {
           id = this.state.selectableTargets[0].feature.properties.id;
           contents = (
-            <Relay.RootContainer
-              Component={CityBikePopup}
-              forceFetch
-              route={new CityBikeRoute({
+            <QueryRenderer
+              environment={Relay.Store}
+              cacheConfig={{ force: true, poll: 60 * 1000 }}
+              query={graphql`
+                query TileLayerContainerQuery($stationId: String!) {
+                  station: bikeRentalStation(id: $stationId) {
+                    ...CityBikePopup_station
+                  }
+                }
+              `}
+              variables={{
                 stationId: id,
-              })}
-              renderLoading={loadingPopup}
-              renderFetched={data => <CityBikePopupWithContext {...data} context={this.context} />}
+              }}
+              render={({ props }) => (props ?
+                <CityBikePopupWithContext {...props} context={this.context} /> : loadingPopup()
+              )}
             />
           );
         } else if (
