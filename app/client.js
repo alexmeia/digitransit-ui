@@ -107,6 +107,8 @@ const callback = () => app.rehydrate(window.state, (err, context) => {
     next => (req) => {
       // eslint-disable-next-line no-param-reassign
       req.headers.OTPTimeout = config.OTPTimeout;
+      // Tepmf fix for allowing other names for query type
+      req.body = req.body.replace(/on Query/g, 'on QueryType');
       return next(req);
     },
   ]));
