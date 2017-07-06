@@ -25,6 +25,9 @@ import LocationPopup from '../popups/LocationPopup';
 import TileContainer from './TileContainer';
 import Loading from '../../Loading';
 
+import getEnvironment from '../../../relayEnvironment';
+
+
 const StopMarkerPopupWithContext = provideContext(StopMarkerPopup, {
   intl: intlShape.isRequired,
   router: PropTypes.object.isRequired,
@@ -236,7 +239,7 @@ class TileLayerContainer extends MapLayer {
           id = this.state.selectableTargets[0].feature.properties.id;
           contents = (
             <QueryRenderer
-              environment={Relay.Store}
+              environment={getEnvironment()}
               cacheConfig={{ force: true, poll: 60 * 1000 }}
               query={graphql`
                 query TileLayerContainerQuery($stationId: String!) {
