@@ -1,6 +1,9 @@
 import PropTypes from 'prop-types';
 import React from 'react';
-import Relay from 'react-relay/classic';
+import {
+  createFragmentContainer,
+  graphql,
+} from 'react-relay/compat';
 import PlaceAtDistanceListContainer from './PlaceAtDistanceListContainer';
 
 const NearbyRouteList = props => (
@@ -17,36 +20,20 @@ NearbyRouteList.propTypes = {
   timeRange: PropTypes.number.isRequired,
 };
 
-export default Relay.createContainer(NearbyRouteList, {
-  fragments: {
-    nearest: variables => Relay.QL`
-      fragment on Query {
-        places: nearest(
-          lat: $lat,
-          lon: $lon,
-          maxDistance: $maxDistance,
-          maxResults: $maxResults,
-          first: $maxResults,
-          filterByModes: $modes,
-          filterByPlaceTypes: $placeTypes,
-        ) {
-          ${PlaceAtDistanceListContainer.getFragment('places', {
-            currentTime: variables.currentTime,
-            timeRange: variables.timeRange,
-          })}
-        }
+export default createFragmentContainer(NearbyRouteList, {
+  nearest: graphql`
+    fragment NearbyRouteListContainer_nearest on Query {
+      places: nearest(
+        lat: $lat,
+        lon: $lon,
+        maxDistance: $maxDistance,
+        maxResults: $maxResults,
+        first: $maxResults,
+        filterByModes: $modes,
+        filterByPlaceTypes: $placeTypes,
+      ) {
+        ...PlaceAtDistanceListContainer_places
       }
-    `,
-  },
-
-  initialVariables: {
-    lat: null,
-    lon: null,
-    maxDistance: 0,
-    maxResults: 50,
-    modes: [],
-    placeTypes: [],
-    currentTime: 0,
-    timeRange: 0,
-  },
+    }
+  `,
 });

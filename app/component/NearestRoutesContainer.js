@@ -1,32 +1,10 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import Relay, { Route } from 'react-relay/classic';
+import { QueryRenderer, graphql } from 'react-relay/compat';
+import { Store } from 'react-relay/classic';
 import NearbyRouteListContainer from './NearbyRouteListContainer';
 import NetworkError from './NetworkError';
 import Loading from './Loading';
-
-class NearbyRouteListContainerRoute extends Route {
-  static queries = {
-    nearest: (RelayComponent, variables) => Relay.QL`
-      query {
-        viewer {
-          ${RelayComponent.getFragment('nearest', variables)}
-        }
-      }
-    `,
-  };
-  static paramDefinitions = {
-    lat: { required: true },
-    lon: { required: true },
-    currentTime: { required: true },
-    modes: { required: true },
-    placeTypes: { required: true },
-    maxDistance: { required: true },
-    maxResults: { required: true },
-    timeRange: { required: true },
-  };
-  static routeName = 'NearbyRouteListContainerRoute';
-}
 
 export default class NearestRoutesContainer extends Component {
   static propTypes = {
@@ -63,9 +41,27 @@ export default class NearestRoutesContainer extends Component {
 
   render() {
     return (
-      <Relay.Renderer
-        Container={NearbyRouteListContainer}
-        queryConfig={new NearbyRouteListContainerRoute({
+      <QueryRenderer
+        environment={Store}
+        query={
+          graphql`
+            query NearestRoutesContainerQuery(
+              $lat: Float!,
+              $lon: Float!,
+              $currentTime: Long!,
+              $modes: [Mode!],
+              $placeTypes: [FilterPlaceType!],
+              $maxDistance: Int!,
+              $maxResults: Int!,
+              $timeRange: Int!
+            ){
+              nearest: viewer {
+                ...NearbyRouteListContainer_nearest
+              }
+            }
+          `
+        }
+        variables={{
           lat: this.props.lat,
           lon: this.props.lon,
           currentTime: this.props.currentTime,
@@ -74,16 +70,20 @@ export default class NearestRoutesContainer extends Component {
           maxDistance: this.props.maxDistance,
           maxResults: this.props.maxResults,
           timeRange: this.props.timeRange,
-        })}
-        environment={Relay.Store}
-
+        }}
         render={({ error, props, retry }) => {
           if (error) {
             this.useSpinner = true;
             return <NetworkError retry={retry} />;
           } else if (props) {
             this.useSpinner = false;
-            return <NearbyRouteListContainer {...props} />;
+            return (
+              <NearbyRouteListContainer
+                nearest={props.nearest}
+                currentTime={this.props.currentTime}
+                timeRange={this.props.timeRange}
+              />
+            );
           }
           if (this.useSpinner === true) {
             return <Loading />;
