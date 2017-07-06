@@ -3,7 +3,7 @@ import React from 'react';
 import {
   createFragmentContainer,
   graphql,
-} from 'react-relay/compat';
+} from 'react-relay';
 import sortBy from 'lodash/sortBy';
 
 import PlaceAtDistanceContainer from './PlaceAtDistanceContainer';

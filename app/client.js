@@ -28,6 +28,7 @@ import { openFeedbackModal } from './action/feedbackActions';
 import { shouldDisplayPopup } from './util/Feedback';
 import { initGeolocation } from './action/PositionActions';
 import historyCreator from './history';
+import { setNetworkLayerUrl } from './relayEnvironment';
 import { COMMIT_ID, BUILD_TIME } from './buildInfo';
 import Piwik from './util/piwik';
 
@@ -112,6 +113,8 @@ const callback = () => app.rehydrate(window.state, (err, context) => {
       return next(req);
     },
   ]));
+
+  setNetworkLayerUrl(`${config.URL.OTP}index/graphql`);
 
   context
     .getComponentContext()

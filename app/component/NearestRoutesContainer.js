@@ -1,10 +1,10 @@
 import PropTypes from 'prop-types';
 import React, { Component } from 'react';
-import { QueryRenderer, graphql } from 'react-relay/compat';
-import { Store } from 'react-relay/classic';
-import NearbyRouteListContainer from './NearbyRouteListContainer';
+import { QueryRenderer, graphql } from 'react-relay';
+import PlaceAtDistanceListContainer from './PlaceAtDistanceListContainer';
 import NetworkError from './NetworkError';
 import Loading from './Loading';
+import getEnvironment from '../relayEnvironment';
 
 export default class NearestRoutesContainer extends Component {
   static propTypes = {
@@ -17,6 +17,10 @@ export default class NearestRoutesContainer extends Component {
     maxResults: PropTypes.number.isRequired,
     timeRange: PropTypes.number.isRequired,
   };
+
+  static contextTypes = {
+    config: PropTypes.object.isRequired,
+  }
 
   constructor() {
     super();
@@ -42,7 +46,7 @@ export default class NearestRoutesContainer extends Component {
   render() {
     return (
       <QueryRenderer
-        environment={Store}
+        environment={getEnvironment()}
         query={
           graphql`
             query NearestRoutesContainerQuery(
@@ -55,8 +59,16 @@ export default class NearestRoutesContainer extends Component {
               $maxResults: Int!,
               $timeRange: Int!
             ){
-              nearest: viewer {
-                ...NearbyRouteListContainer_nearest
+              places: nearest(
+                lat: $lat,
+                lon: $lon,
+                maxDistance: $maxDistance,
+                maxResults: $maxResults,
+                first: $maxResults,
+                filterByModes: $modes,
+                filterByPlaceTypes: $placeTypes,
+              ) {
+                ...PlaceAtDistanceListContainer_places
               }
             }
           `
@@ -78,8 +90,8 @@ export default class NearestRoutesContainer extends Component {
           } else if (props) {
             this.useSpinner = false;
             return (
-              <NearbyRouteListContainer
-                nearest={props.nearest}
+              <PlaceAtDistanceListContainer
+                places={props.places}
                 currentTime={this.props.currentTime}
                 timeRange={this.props.timeRange}
               />
@@ -88,7 +100,7 @@ export default class NearestRoutesContainer extends Component {
           if (this.useSpinner === true) {
             return <Loading />;
           }
-          return undefined;
+          return null;
         }}
       />
     );
