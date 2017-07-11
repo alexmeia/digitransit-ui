@@ -90,7 +90,6 @@ export default configMerger(walttiConfig, {
   name: 'Digitransit beta',
   shortName: 'Digitransit',
 
-
 /*
  * by default search endpoints from all but gtfs sources, correct gtfs source
  * figured based on feedIds config variable
@@ -101,11 +100,29 @@ export default configMerger(walttiConfig, {
     suggestions: {
       useTransportIcons: false,
     },
-    usePeliasStops: true,
-    mapPeliasModality: false,
-    peliasMapping: { },
-    peliasLayer: null,
-    peliasLocalization: null,
+    usePeliasStops: true, // enable to use pelias to search for stops
+    mapPeliasModality: true, // enable to map pelias stops to otp
+    peliasMapping: { // mapping values
+      onstreetBus: 'BUS',
+      onstreetTram: 'TRAM',
+      airport: 'AIRPORT',
+      railStation: 'RAIL',
+      metroStation: 'SUBWAY',
+      busStation: 'BUS',
+      tramStation: 'TRAM',
+      harbourPort: 'FERRY',
+      ferryPort: 'FERRY',
+      ferryStop: 'FERRY',
+      liftStation: 'FUNICULAR',
+    },
+    peliasLayer: () => 'stop', // function to change layer
+    peliasLocalization: (feature) => {
+      // localization example; showing locality (county) in label and name
+      const localized = { ...feature };
+      localized.properties.label = `${feature.properties.name}, ${feature.properties.locality}`;
+      localized.properties.name = `${feature.properties.name}, ${feature.properties.locality}`;
+      return localized;
+    },
   },
 
   nearbyRoutes: {
