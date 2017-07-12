@@ -17,7 +17,7 @@ const maxLon = 12.6;
 export default configMerger(walttiConfig, {
   CONFIG,
 
-    URL: {
+  URL: {
     API_URL,
     OTP: `${API_URL}/otp/routers/toscana/`,
     MAP: {
@@ -52,10 +52,10 @@ export default configMerger(walttiConfig, {
   feedIds: [],
 
   searchParams: {
-    /*'boundary.rect.min_lat': minLat,
+    'boundary.rect.min_lat': minLat,
     'boundary.rect.max_lat': maxLat,
     'boundary.rect.min_lon': minLon,
-    'boundary.rect.max_lon': maxLon,*/
+    'boundary.rect.max_lon': maxLon,
   },
 
   areaPolygon: [[minLon, minLat], [minLon, maxLat], [maxLon, maxLat], [maxLon, minLat]],
@@ -94,14 +94,14 @@ export default configMerger(walttiConfig, {
  * by default search endpoints from all but gtfs sources, correct gtfs source
  * figured based on feedIds config variable
  */
-  searchSources: ['osm'],
+  searchSources: ['osm', 'oa'],
 
   search: {
     suggestions: {
       useTransportIcons: false,
     },
-    usePeliasStops: true, // enable to use pelias to search for stops
-    mapPeliasModality: true, // enable to map pelias stops to otp
+    usePeliasStops: false, // enable to use pelias to search for stops
+    mapPeliasModality: false, // enable to map pelias stops to otp
     peliasMapping: { // mapping values
       onstreetBus: 'BUS',
       onstreetTram: 'TRAM',
@@ -115,7 +115,7 @@ export default configMerger(walttiConfig, {
       ferryStop: 'FERRY',
       liftStation: 'FUNICULAR',
     },
-    peliasLayer: () => 'stop', // function to change layer
+    peliasLayer: null, // function to change layer
     peliasLocalization: (feature) => {
       // localization example; showing locality (county) in label and name
       const localized = { ...feature };
@@ -132,8 +132,8 @@ export default configMerger(walttiConfig, {
 
   maxWalkDistance: 10000,
   maxBikingDistance: 100000,
-  availableLanguages: ['en', 'fr', 'nb', 'de'],
-  defaultLanguage: 'en',
+  availableLanguages: ['it', 'en', 'fr', 'nb', 'de'],
+  defaultLanguage: 'it',
   // This timezone data will expire on 31.12.2020
   timezoneData: '"Europe/Rome|CET CEST|-10 -20|0101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010|'+
   '-2arB0 Lz0 1cN0 1db0 1410 1on0 Wp0 1qL0 17d0 1cL0 M3B0 5M20 WM0 1fA0 1cM0 16M0 1iM0 16m0 1de0 1lc0 14m0 1lc0 WO0 1qM0 GTW0 On0 1C10 LA0 1C00 LA0 1EM0 LA0 1C00 LA0 1zc0 Oo0 1C00 Oo0 1C00 LA0 1zc0 Oo0 1C00 LA0 1C00 LA0 1zc0 Oo0 1C00 Oo0 1zc0 Oo0 1fC0 1a00 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1cM0 1fA0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00 11A0 1qM0 WM0 1qM0 WM0 1qM0 WM0 1qM0 11A0 1o00 11A0 1o00|39e5",',
