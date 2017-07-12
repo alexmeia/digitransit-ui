@@ -1125,7 +1125,7 @@ const translations = {
     'zones': 'Zones',
   },
 
-    'it': {
+  'it': {
     'about-this-service': 'Informazioni sul servizio',
     'accessibility': 'Accessibilità',
     'add-itinerary-via-point': 'Aggiungi destinazione intermedia all\'itinerario',
@@ -1307,6 +1307,8 @@ const translations = {
     'stop-page.title-short': 'Fermata',
     'stops': 'Stops',
     'subway-with-route-number': 'Metro {routeNumber} {headSign}',
+    'summary-page.description': '{from} - {to}',
+    'summary-page.title': 'Itinerari suggeriti',
     'terminal-page.description': 'Terminal {stop_name}',
     'terminal-page.title': 'Terminal {stop_name}',
     'terminal-page.title-short': 'Terminal',
