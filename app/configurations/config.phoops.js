@@ -17,7 +17,7 @@ const maxLon = 12.6;
 export default configMerger(walttiConfig, {
   CONFIG,
 
-    URL: {
+  URL: {
     API_URL,
     OTP: `${API_URL}/otp/routers/toscana/`,
     MAP: {
@@ -94,14 +94,14 @@ export default configMerger(walttiConfig, {
  * by default search endpoints from all but gtfs sources, correct gtfs source
  * figured based on feedIds config variable
  */
-  searchSources: ['osm'],
+  searchSources: ['osm', 'oa'],
 
   search: {
     suggestions: {
       useTransportIcons: false,
     },
-    usePeliasStops: true, // enable to use pelias to search for stops
-    mapPeliasModality: true, // enable to map pelias stops to otp
+    usePeliasStops: false, // enable to use pelias to search for stops
+    mapPeliasModality: false, // enable to map pelias stops to otp
     peliasMapping: { // mapping values
       onstreetBus: 'BUS',
       onstreetTram: 'TRAM',
@@ -115,7 +115,7 @@ export default configMerger(walttiConfig, {
       ferryStop: 'FERRY',
       liftStation: 'FUNICULAR',
     },
-    peliasLayer: () => 'stop', // function to change layer
+    peliasLayer: null, // function to change layer
     peliasLocalization: (feature) => {
       // localization example; showing locality (county) in label and name
       const localized = { ...feature };
