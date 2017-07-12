@@ -2,7 +2,7 @@
 import configMerger from '../util/configMerger';
 
 const CONFIG = 'phoops';
-const APP_TITLE = 'MInT';
+const APP_TITLE = 'Muoversi in Toscana';
 const APP_DESCRIPTION = 'Muoversi In Toscana - phoops';
 const API_URL = 'http://localhost:8888';
 const MAP_URL = 'https://maps.wikimedia.org/osm-intl/';
@@ -36,7 +36,7 @@ export default configMerger(walttiConfig, {
   appBarLink: { name: 'phoops', href: 'http://www.phoops.it/' },
 
   colors: {
-    primary: '#e51d5b',
+    primary: '#bb0303',
   },
 
   socialMedia: {
