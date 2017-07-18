@@ -8,6 +8,7 @@ const SENTRY_DSN = process.env.SENTRY_DSN;
 const PORT = process.env.PORT || 8080;
 const APP_DESCRIPTION = 'Digitransit journey planning UI';
 const OTP_TIMEOUT = process.env.OTP_TIMEOUT || 10000; // 10k is the current server default
+const YEAR = 1900 + new Date().getYear();
 
 export default {
   PIWIK_ADDRESS,
@@ -204,6 +205,8 @@ export default {
   colors: {
     primary: '#00AFFF',
   },
+
+  sprites: 'svg-sprite.default.svg',
 
   disruption: {
     showInfoButton: true,
@@ -417,7 +420,7 @@ export default {
 
   footer: {
     content: [
-      { label: (function () { return `© HSL, Liikennevirasto ${(1900 + new Date().getYear())}`; }()) },
+      { label: `© HSL, Liikennevirasto ${YEAR}` },
       {},
       { name: 'footer-feedback', nameEn: 'Submit feedback', href: 'https://github.com/HSLdevcom/digitransit-ui/issues', icon: 'icon-icon_speech-bubble' },
       { name: 'about-this-service', nameEn: 'About this service', route: '/tietoja-palvelusta', icon: 'icon-icon_info' },
@@ -497,6 +500,7 @@ export default {
     hameenlinna: 'hameenlinna',
     matka: 'matka',
     phoops: 'phoops',
+    kotka: 'kotka',
     jyvaskyla: 'jyvaskyla',
     lahti: 'lahti',
     kuopio: 'kuopio',

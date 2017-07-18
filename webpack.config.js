@@ -11,7 +11,7 @@ const StatsPlugin = require('stats-webpack-plugin');
 // const OptimizeJsPlugin = require('optimize-js-plugin');
 const OfflinePlugin = require('offline-plugin');
 const NameAllModulesPlugin = require('name-all-modules-plugin');
-const GzipCompressionPlugin = require('compression-webpack-plugin');
+const ZopfliCompressionPlugin = require('zopfli-webpack-plugin');
 const BrotliCompressionPlugin = require('brotli-webpack-plugin');
 const FaviconsWebpackPlugin = require('favicons-webpack-plugin');
 const fs = require('fs');
@@ -19,7 +19,7 @@ const fs = require('fs');
 require('babel-core/register')({
   presets: [['env', { targets: { node: 'current' } }], 'stage-2', 'react'],
   plugins: [
-    'transform-system-import-commonjs',
+    'dynamic-import-node',
     path.join(process.cwd(), 'build/babelRelayPlugin'),
   ],
   ignore: [
@@ -40,7 +40,9 @@ function getRulesConfig(env) {
       { test: /\.(eot|png|ttf|woff|svg)$/, loader: 'file' },
       { test: /\.js$/,
         loader: 'babel',
-        exclude: /node_modules/,
+        include: [
+          path.resolve(__dirname, 'app/'),
+        ],
         options: {
           presets: [
             ['env', { targets: { browsers: prodBrowsers }, modules: false }],
@@ -48,7 +50,7 @@ function getRulesConfig(env) {
             'stage-2',
           ],
           plugins: [
-            'transform-system-import-commonjs',
+            'transform-import-commonjs',
             path.join(__dirname, 'build/babelRelayPlugin'),
             ['transform-runtime', {
               helpers: true,
@@ -69,7 +71,9 @@ function getRulesConfig(env) {
     { test: /\.(eot|png|ttf|woff|svg)$/, loader: 'url-loader?limit=10000' },
     { test: /\.js$/,
       loader: 'babel',
-      exclude: /node_modules/,
+      include: [
+        path.resolve(__dirname, 'app/'),
+      ],
       options: {
         // loose is needed by older Androids < 4.3 and IE10
         presets: [
@@ -88,6 +92,21 @@ function getRulesConfig(env) {
         ],
         ignore: [
           'app/util/piwik.js',
+        ],
+      },
+    },
+    { test: /\.js$/,
+      loader: 'babel',
+      include: [
+        // https://github.com/mapbox/mapbox-gl-js/issues/3368
+        path.resolve(__dirname, 'node_modules/@mapbox/mapbox-gl-style-spec/'),
+      ],
+      options: {
+        plugins: [
+          'transform-es2015-block-scoping',
+          'transform-es2015-arrow-functions',
+          'transform-es2015-for-of',
+          'transform-es2015-template-literals',
         ],
       },
     },
@@ -183,6 +202,8 @@ function getPluginsConfig(env) {
       new webpack.ContextReplacementPlugin(intlExpression, languageExpression),
       new webpack.ContextReplacementPlugin(themeExpression, selectedTheme),
       new webpack.DefinePlugin({ 'process.env': { NODE_ENV: JSON.stringify('development') } }),
+      new webpack.NamedChunksPlugin(),
+      new webpack.NamedModulesPlugin(),
       new webpack.LoaderOptionsPlugin({
         debug: true,
         options: {
@@ -199,6 +220,7 @@ function getPluginsConfig(env) {
     new webpack.DefinePlugin({ 'process.env': { NODE_ENV: JSON.stringify('production') } }),
     new webpack.NamedChunksPlugin(),
     new webpack.NamedModulesPlugin(),
+    new NameAllModulesPlugin(),
     new webpack.LoaderOptionsPlugin({
       debug: false,
       minimize: true,
@@ -213,12 +235,18 @@ function getPluginsConfig(env) {
       minChunks: Infinity,
     }),
     new webpack.optimize.CommonsChunkPlugin({
+      name: 'main',
+      children: true,
+      minChunks: 5,
+    }),
+    new webpack.optimize.CommonsChunkPlugin({
+      name: 'main',
       children: true,
       async: true,
+      minChunks: 3,
     }),
-    new webpack.optimize.AggressiveMergingPlugin({ minSizeReduce: 1.2 }),
-    new webpack.optimize.MinChunkSizePlugin({ minChunkSize: 30000 }),
-    new NameAllModulesPlugin(),
+    new webpack.optimize.AggressiveMergingPlugin({ minSizeReduce: 1.5 }),
+    new webpack.optimize.ModuleConcatenationPlugin(),
     new StatsPlugin('../stats.json', { chunkModules: true }),
     new webpack.optimize.UglifyJsPlugin({
       sourceMap: true,
@@ -265,9 +293,8 @@ function getPluginsConfig(env) {
       },
       version: '[hash]',
     }),
-    new GzipCompressionPlugin({
+    new ZopfliCompressionPlugin({
       asset: '[path].gz[query]',
-      algorithm: 'zopfli',
       test: /\.(js|css|html|svg|ico)$/,
       minRatio: 0.95,
     }),
@@ -308,7 +335,7 @@ function getEntry() {
       themeCss = './sass/themes/default/main.scss';
     }
     entry[theme + '_theme'] = [themeCss];
-    entry[theme + '_sprite'] = ['./static/' + (sprites || '/svg-sprite.' + theme + '.svg')];
+    entry[sprites] = ['./static/' + sprites];
   };
 
   if (process.env.CONFIG && process.env.CONFIG !== '') {
@@ -342,17 +369,15 @@ module.exports = {
   resolve: {
     mainFields: ['browser', 'module', 'jsnext:main', 'main'],
     alias: {
-      'lodash.merge': 'lodash/merge',
-      'lodash.keys': 'lodash/keys',
-      'history/lib/Actions': 'history/es6/Actions',
-      'history/lib/createBrowserHistory': 'history/es6/createBrowserHistory',
-      'history/lib/createHashHistory': 'history/es6/createHashHistory',
-      'history/lib/createMemoryHistory': 'history/es6/createMemoryHistory',
-      'history/lib/useBasename': 'history/es6/useBasename',
-      'history/lib/useQueries': 'history/es6/useQueries',
-      'react-router/lib/getRouteParams': 'react-router/es6/getRouteParams',
+      'lodash.merge': 'lodash-es/merge',
+      'react-router/lib/getRouteParams': 'react-router/es/getRouteParams',
+      'react-router-relay/lib': 'react-router-relay/es',
+      'react-router-relay/lib/RelayRouterContext': 'react-router-relay/es/RelayRouterContext',
+      'react-router-relay/lib/QueryAggregator': 'react-router-relay/es/QueryAggregator',
       moment$: 'moment/moment.js',
-      'core-js/library/fn/weak-map': path.join(__dirname, 'app/util/WeakMap'),
+      lodash: 'lodash-es',
+      'babel-runtime/helpers/slicedToArray': path.join(__dirname, 'app/util/slicedToArray'),
+      'babel-runtime/core-js/get-iterator': path.join(__dirname, 'app/util/getIterator'),
     },
   },
   resolveLoader: {
@@ -365,7 +390,35 @@ module.exports = {
     net: 'empty',
     tls: 'empty',
   },
-  externals: {},
+  externals: {
+    'babel-runtime/core-js/array/from': 'var Array.from',
+    '../core-js/array/from': 'var Array.from',
+    'babel-runtime/core-js/json/stringify': 'var JSON.stringify',
+    'babel-runtime/core-js/map': 'var Map',
+    'babel-runtime/core-js/object/assign': 'var Object.assign',
+    'babel-runtime/core-js/object/create': 'var Object.create',
+    '../core-js/object/create': 'var Object.create',
+    'babel-runtime/core-js/object/define-property': 'var Object.defineProperty',
+    '../core-js/object/define-property': 'var Object.defineProperty',
+    'babel-runtime/core-js/object/entries': 'var Object.entries',
+    'babel-runtime/core-js/object/freeze': 'var Object.freeze',
+    'babel-runtime/core-js/object/keys': 'var Object.keys',
+    '../core-js/object/get-own-property-descriptor': 'var Object.getOwnPropertyDescriptor',
+    'babel-runtime/core-js/object/get-prototype-of': 'var Object.getPrototypeOf',
+    '../core-js/object/get-prototype-of': 'var Object.getPrototypeOf',
+    'babel-runtime/core-js/object/set-prototype-of': 'var Object.setPrototypeOf',
+    '../core-js/object/set-prototype-of': 'var Object.setPrototypeOf',
+    'babel-runtime/core-js/promise': 'var Promise',
+    '../core-js/symbol': 'var Symbol',
+    '../core-js/symbol/iterator': 'var Symbol.iterator',
+    'babel-runtime/core-js/weak-map': 'var WeakMap',
+    'babel-runtime/helpers/extends': 'var Object.assign',
+    'fbjs/lib/fetch': 'var fetch',
+    './fetch': 'var fetch',
+    'fbjs/lib/Map': 'var Map',
+    'object-assign': 'var Object.assign',
+    'simple-assign': 'var Object.assign',
+  },
   performance: {
     hints: (process.env.NODE_ENV === 'development') ? false : 'warning',
   },
