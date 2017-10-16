@@ -1173,7 +1173,7 @@ const translations = {
     'digitransit-platform': 'Digitransit service platform',
     'disruption-info': 'Informazioni sulle interruzioni ',
     'disruption-info-no-alerts': 'Nessuna deviazione o interruzione nota.',
-    'disruption-info-route-no-alerts': 'Nessuna interruzione nota per questo itineriario.',
+    'disruption-info-route-no-alerts': 'Nessuna interruzione nota per questo percorso.',
     'disruptions': 'Interruzioni',
     'distance-between': 'Distanza {distance1} m — {distance2} m',
     'distance-under': 'Distanza mnore di {distance} m',
