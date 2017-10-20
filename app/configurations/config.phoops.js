@@ -300,6 +300,19 @@ export default configMerger(walttiConfig, {
     },
   },
 
+  ticketOptions: [{
+    displayName: 'Nessuna zona a pagamento',
+    value: '0',
+  }],
+
+  accessibilityOptions: [{
+    displayName: 'Nessuna restrizione',
+    value: '0',
+  }, {
+    displayName: 'Sedia a rotelle',
+    value: '1',
+  }],
+
   aboutThisService: {
     fi: [
       {
